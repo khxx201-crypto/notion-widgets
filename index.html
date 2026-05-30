@@ -14,8 +14,13 @@
     }
     @media (prefers-color-scheme: dark) { body { background-color: #191919; color: rgba(255, 255, 255, 0.9); } }
 
-    .settings-btn { position: absolute; top: 15px; right: 15px; cursor: pointer; opacity: 0; font-size: 20px; transition: opacity 0.2s ease; filter: grayscale(100%); }
-    body:hover .settings-btn { opacity: 0.3; } .settings-btn:hover { opacity: 0.8 !important; }
+ 
+    .settings-btn { 
+      position: absolute; top: 10px; left: 10px; cursor: pointer; 
+      opacity: 0.3;
+      font-size: 18px; transition: opacity 0.2s ease; filter: grayscale(100%); 
+    }
+    .settings-btn:hover { opacity: 0.8 !important; }
 
     .widget-container { width: 100%; display: flex; flex-direction: column; gap: 0.8rem; }
     .date-header { font-size: 2.2rem; letter-spacing: -0.05rem; color: #37352f; }
@@ -100,29 +105,18 @@
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
- 
     function getSafeBirthDate() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('dob')) return urlParams.get('dob');
-      } catch(e) {}
-      
-      try {
-        if (typeof window.localStorage !== 'undefined') {
-          return window.localStorage.getItem('userBirthDate') || '1990-01-01';
-        }
-      } catch (e) {
-   
-        return '1990-01-01'; 
-      }
-      return '1990-01-01';
+        return window.localStorage.getItem('userBirthDate') || '1990-01-01';
+      } catch (e) { return '1990-01-01'; }
     }
 
     function updateDisplay() {
       try {
         const today = new Date();
         const monthStr = monthNames[today.getMonth()];
-        // 여기서 오늘 날짜로 텍스트 덮어쓰기
         currentDateEl.innerText = `${monthStr} ${today.getDate()} ${today.getFullYear()}`;
 
         const savedDate = getSafeBirthDate();
@@ -142,9 +136,7 @@
         progressPercentEl.innerText = `${percent}%`;
         setTimeout(() => { progressFillEl.style.width = `${percent}%`; }, 100);
         progressDaysEl.innerText = `${dayOfYear}/${daysInYear} days`;
-      } catch (error) {
-        currentDateEl.innerText = "Error loading date";
-      }
+      } catch (error) { currentDateEl.innerText = "Error"; }
     }
 
     settingsBtn.addEventListener('click', () => {
@@ -155,12 +147,7 @@
 
     saveBtn.addEventListener('click', () => {
       if(birthDateInput.value) {
-        try {
-          window.localStorage.setItem('userBirthDate', birthDateInput.value);
-        } catch(e) {
-          // 노션 앱 내부에서 차단될 경우 경고창 띄우기
-          alert('노션 데스크톱 앱에서는 보안상 위젯 직접 저장이 제한됩니다.\n대신 임베드 링크 주소 끝에 ?dob=YYYY-MM-DD 를 붙여주세요!\n예: .../?dob=1995-05-20');
-        }
+        try { window.localStorage.setItem('userBirthDate', birthDateInput.value); } catch(e) {}
       }
       settingsModal.style.display = 'none';
       widgetContent.style.opacity = '1';
@@ -172,9 +159,7 @@
       widgetContent.style.opacity = '1';
     });
 
-    // 스크립트 최종 실행
     updateDisplay();
   </script>
-
 </body>
 </html>
