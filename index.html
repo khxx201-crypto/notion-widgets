@@ -6,175 +6,41 @@
   <title>Life & Year Progress Widget</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css" />
   <style>
-    /* 1. 반응형 폰트의 핵심 기준점 (루트 사이즈 설정) */
-    :root {
-      /* 가로(vw)와 세로(vh) 중 더 작은 값을 기준으로 폰트 크기를 유연하게 결정 */
-      font-size: min(4.5vw, 7vh); 
-    }
-
-    /* 2. 기본 노션 UI 설정 (라이트/다크 대응 및 프리텐다드 Bold) */
+    :root { font-size: min(4.5vw, 7vh); }
     body {
-      font-family: 'Pretendard', sans-serif;
-      font-weight: 700;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      /* 화면 크기에 비례하여 여백도 자동으로 줄어들고 늘어남 */
-      padding: 0 6%; 
-      background-color: #FFFFFF;
-      color: #37352f;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      overflow: hidden;
-      position: relative;
-      box-sizing: border-box;
+      font-family: 'Pretendard', sans-serif; font-weight: 700; display: flex; justify-content: flex-start;
+      align-items: center; height: 100vh; margin: 0; padding: 0 6%; background-color: #FFFFFF;
+      color: #37352f; transition: background-color 0.3s ease, color 0.3s ease; overflow: hidden; position: relative; box-sizing: border-box;
     }
-    
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #191919;
-        color: rgba(255, 255, 255, 0.9);
-      }
-    }
+    @media (prefers-color-scheme: dark) { body { background-color: #191919; color: rgba(255, 255, 255, 0.9); } }
 
-    /* 3. 톱니바퀴 설정 아이콘 (UI 컨트롤은 고정 크기 유지) */
-    .settings-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      cursor: pointer;
-      opacity: 0;
-      font-size: 20px;
-      transition: opacity 0.2s ease;
-      filter: grayscale(100%);
-    }
+    .settings-btn { position: absolute; top: 15px; right: 15px; cursor: pointer; opacity: 0; font-size: 20px; transition: opacity 0.2s ease; filter: grayscale(100%); }
+    body:hover .settings-btn { opacity: 0.3; } .settings-btn:hover { opacity: 0.8 !important; }
 
-    body:hover .settings-btn { opacity: 0.3; }
-    .settings-btn:hover { opacity: 0.8 !important; }
+    .widget-container { width: 100%; display: flex; flex-direction: column; gap: 0.8rem; }
+    .date-header { font-size: 2.2rem; letter-spacing: -0.05rem; color: #37352f; }
+    @media (prefers-color-scheme: dark) { .date-header { color: rgba(255, 255, 255, 0.9); } }
 
-    /* 4. 메인 위젯 레이아웃 (rem 단위 적용으로 전체 자동 스케일링) */
-    .widget-container {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem; /* 요소 간격도 화면에 비례하여 늘어남 */
-    }
+    .days-text { font-size: 1.4rem; display: flex; align-items: baseline; gap: 0.3rem; color: #37352f; }
+    @media (prefers-color-scheme: dark) { .days-text { color: rgba(255, 255, 255, 0.9); } }
+    .triangle { font-size: 1.2rem; color: inherit; }
+    .number { color: #37352f; font-size: 1.6rem; }
+    @media (prefers-color-scheme: dark) { .number { color: rgba(255, 255, 255, 0.9); } }
 
-    .date-header {
-      font-size: 2.2rem;
-      letter-spacing: -0.05rem;
-      color: #37352f;
-    }
-    
-    @media (prefers-color-scheme: dark) {
-      .date-header { color: rgba(255, 255, 255, 0.9); }
-    }
+    .progress-wrapper { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; }
+    .progress-track { width: 100%; height: 0.85rem; background-color: #e1e1e1; border-radius: 1rem; overflow: hidden; }
+    @media (prefers-color-scheme: dark) { .progress-track { background-color: #333333; } }
+    .progress-fill { height: 100%; background-color: #37352f; border-radius: 1rem; transition: width 0.8s ease-out; }
+    @media (prefers-color-scheme: dark) { .progress-fill { background-color: rgba(255, 255, 255, 0.9); } }
+    .progress-footer { text-align: right; font-size: 0.75rem; color: #787774; }
+    @media (prefers-color-scheme: dark) { .progress-footer { color: rgba(255, 255, 255, 0.5); } }
 
-    .days-text {
-      font-size: 1.4rem;
-      display: flex;
-      align-items: baseline;
-      gap: 0.3rem;
-      color: #37352f;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .days-text { color: rgba(255, 255, 255, 0.9); }
-    }
-
-    .triangle {
-      font-size: 1.2rem;
-      color: inherit;
-    }
-
-    .number {
-      color: #37352f; 
-      font-size: 1.6rem;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .number { color: rgba(255, 255, 255, 0.9); }
-    }
-
-    /* 5. 진행률 바 (자동 두께 조절) */
-    .progress-wrapper {
-      margin-top: 0.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-    }
-
-    .progress-track {
-      width: 100%;
-      height: 0.85rem; /* 화면이 커지면 바의 두께도 같이 굵어짐 */
-      background-color: #e1e1e1;
-      border-radius: 1rem;
-      overflow: hidden;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .progress-track { background-color: #333333; }
-    }
-
-    .progress-fill {
-      height: 100%;
-      background-color: #37352f;
-      border-radius: 1rem;
-      transition: width 0.8s ease-out;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .progress-fill { background-color: rgba(255, 255, 255, 0.9); }
-    }
-
-    .progress-footer {
-      text-align: right;
-      font-size: 0.75rem;
-      color: #787774;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .progress-footer { color: rgba(255, 255, 255, 0.5); }
-    }
-
-    /* 6. 설정 모달창 (모달은 스케일링되지 않도록 고정 픽셀(px) 사용) */
-    .modal {
-      display: none;
-      flex-direction: column;
-      background-color: #FFFFFF;
-      border: 1px solid rgba(15, 15, 15, 0.1);
-      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
-      border-radius: 6px;
-      padding: 20px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      width: 260px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .modal { background-color: #252525; border: 1px solid rgba(255, 255, 255, 0.1); }
-    }
-
+    .modal { display: none; flex-direction: column; background-color: #FFFFFF; border: 1px solid rgba(15, 15, 15, 0.1); box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.2) 0px 9px 24px; border-radius: 6px; padding: 20px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; width: 260px; }
+    @media (prefers-color-scheme: dark) { .modal { background-color: #252525; border: 1px solid rgba(255, 255, 255, 0.1); } }
     .modal label { font-size: 13px; margin-bottom: 10px; font-weight: 500; }
-    .modal input[type="date"] {
-      font-family: inherit; font-weight: 700; padding: 6px 10px; border-radius: 4px; font-size: 14px;
-      border: 1px solid rgba(15, 15, 15, 0.2); background: transparent; color: inherit;
-      margin-bottom: 15px; outline: none;
-    }
-    @media (prefers-color-scheme: dark) {
-      .modal input[type="date"] { border: 1px solid rgba(255, 255, 255, 0.2); color-scheme: dark; }
-    }
-
+    .modal input[type="date"] { font-family: inherit; font-weight: 700; padding: 6px 10px; border-radius: 4px; font-size: 14px; border: 1px solid rgba(15, 15, 15, 0.2); background: transparent; color: inherit; margin-bottom: 15px; outline: none; }
+    @media (prefers-color-scheme: dark) { .modal input[type="date"] { border: 1px solid rgba(255, 255, 255, 0.2); color-scheme: dark; } }
     .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; }
     .btn { padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; border: none; font-weight: 700; font-family: inherit; }
     .btn-save { background-color: #2eaadc; color: white; }
@@ -193,7 +59,7 @@
     
     <div class="days-text">
       <span class="triangle">▸</span>
-      <span class="number" id="daysLived">0</span>일 째 열심히 살아가는 중
+      <span class="number" id="daysLived">0</span>일 째 열심히 살아가는 중...
     </div>
 
     <div class="progress-wrapper">
@@ -234,13 +100,26 @@
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+ 
+    function getBirthDate() {
+ 
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('dob')) return urlParams.get('dob');
+      
+   
+      try {
+        return localStorage.getItem('userBirthDate') || '1990-01-01';
+      } catch (e) {
+        return '1990-01-01';
+      }
+    }
+
     function updateDisplay() {
       const today = new Date();
-      
       const monthStr = monthNames[today.getMonth()];
       currentDateEl.innerText = `${monthStr} ${today.getDate()} ${today.getFullYear()}`;
 
-      const savedDate = localStorage.getItem('userBirthDate') || '1990-01-01';
+      const savedDate = getBirthDate();
       const birthDate = new Date(savedDate);
       const diffTime = today.getTime() - birthDate.getTime();
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -260,27 +139,5 @@
     }
 
     settingsBtn.addEventListener('click', () => {
-      birthDateInput.value = localStorage.getItem('userBirthDate') || '1990-01-01';
+      birthDateInput.value = getBirthDate();
       widgetContent.style.opacity = '0.1';
-      settingsModal.style.display = 'flex';
-    });
-
-    saveBtn.addEventListener('click', () => {
-      if(birthDateInput.value) {
-        localStorage.setItem('userBirthDate', birthDateInput.value);
-      }
-      settingsModal.style.display = 'none';
-      widgetContent.style.opacity = '1';
-      updateDisplay();
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      settingsModal.style.display = 'none';
-      widgetContent.style.opacity = '1';
-    });
-
-    updateDisplay();
-  </script>
-
-</body>
-</html>
