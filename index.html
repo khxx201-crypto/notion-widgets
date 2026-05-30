@@ -55,22 +55,22 @@
   <div class="settings-btn" id="settingsBtn" title="생년월일 설정">⚙️</div>
 
   <div class="widget-container" id="widgetContent">
-    <div class="date-header" id="currentDate">May 12 2026</div>
+    <div class="date-header" id="currentDate">Loading...</div>
     
     <div class="days-text">
       <span class="triangle">▸</span>
-      <span class="number" id="daysLived">0</span>일 째 열심히 살아가는 중...
+      <span class="number" id="daysLived">0</span>일 째 열심히 살아가는 중
     </div>
 
     <div class="progress-wrapper">
       <div class="progress-header">
-        <span id="currentYear">2026</span>
+        <span id="currentYear"></span>
         <span id="progressPercent">0.0%</span>
       </div>
       <div class="progress-track">
         <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
       </div>
-      <div class="progress-footer" id="progressDays">0/365 days</div>
+      <div class="progress-footer" id="progressDays"></div>
     </div>
   </div>
 
@@ -101,43 +101,80 @@
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
  
-    function getBirthDate() {
- 
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('dob')) return urlParams.get('dob');
-      
-   
+    function getSafeBirthDate() {
       try {
-        return localStorage.getItem('userBirthDate') || '1990-01-01';
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('dob')) return urlParams.get('dob');
+      } catch(e) {}
+      
+      try {
+        if (typeof window.localStorage !== 'undefined') {
+          return window.localStorage.getItem('userBirthDate') || '1990-01-01';
+        }
       } catch (e) {
-        return '1990-01-01';
+   
+        return '1990-01-01'; 
       }
+      return '1990-01-01';
     }
 
     function updateDisplay() {
-      const today = new Date();
-      const monthStr = monthNames[today.getMonth()];
-      currentDateEl.innerText = `${monthStr} ${today.getDate()} ${today.getFullYear()}`;
+      try {
+        const today = new Date();
+        const monthStr = monthNames[today.getMonth()];
+        // 여기서 오늘 날짜로 텍스트 덮어쓰기
+        currentDateEl.innerText = `${monthStr} ${today.getDate()} ${today.getFullYear()}`;
 
-      const savedDate = getBirthDate();
-      const birthDate = new Date(savedDate);
-      const diffTime = today.getTime() - birthDate.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      daysLivedEl.innerText = diffDays.toLocaleString();
+        const savedDate = getSafeBirthDate();
+        const birthDate = new Date(savedDate);
+        const diffTime = today.getTime() - birthDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        daysLivedEl.innerText = diffDays.toLocaleString();
 
-      const year = today.getFullYear();
-      const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-      const daysInYear = isLeapYear ? 366 : 365;
-      const startOfYear = new Date(year, 0, 1);
-      const dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-      const percent = ((dayOfYear / daysInYear) * 100).toFixed(1);
+        const year = today.getFullYear();
+        const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        const daysInYear = isLeapYear ? 366 : 365;
+        const startOfYear = new Date(year, 0, 1);
+        const dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+        const percent = ((dayOfYear / daysInYear) * 100).toFixed(1);
 
-      currentYearEl.innerText = year;
-      progressPercentEl.innerText = `${percent}%`;
-      setTimeout(() => { progressFillEl.style.width = `${percent}%`; }, 100);
-      progressDaysEl.innerText = `${dayOfYear}/${daysInYear} days`;
+        currentYearEl.innerText = year;
+        progressPercentEl.innerText = `${percent}%`;
+        setTimeout(() => { progressFillEl.style.width = `${percent}%`; }, 100);
+        progressDaysEl.innerText = `${dayOfYear}/${daysInYear} days`;
+      } catch (error) {
+        currentDateEl.innerText = "Error loading date";
+      }
     }
 
     settingsBtn.addEventListener('click', () => {
-      birthDateInput.value = getBirthDate();
+      birthDateInput.value = getSafeBirthDate();
       widgetContent.style.opacity = '0.1';
+      settingsModal.style.display = 'flex';
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if(birthDateInput.value) {
+        try {
+          window.localStorage.setItem('userBirthDate', birthDateInput.value);
+        } catch(e) {
+          // 노션 앱 내부에서 차단될 경우 경고창 띄우기
+          alert('노션 데스크톱 앱에서는 보안상 위젯 직접 저장이 제한됩니다.\n대신 임베드 링크 주소 끝에 ?dob=YYYY-MM-DD 를 붙여주세요!\n예: .../?dob=1995-05-20');
+        }
+      }
+      settingsModal.style.display = 'none';
+      widgetContent.style.opacity = '1';
+      updateDisplay();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      settingsModal.style.display = 'none';
+      widgetContent.style.opacity = '1';
+    });
+
+    // 스크립트 최종 실행
+    updateDisplay();
+  </script>
+
+</body>
+</html>
