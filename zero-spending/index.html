@@ -4,32 +4,76 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css" />
   <style>
-    body { font-family: 'Pretendard', sans-serif; font-weight: 700; background: #FFFFFF; color: #37352f; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    :root { font-size: min(4vw, 6vh); }
+    body {
+      font-family: 'Pretendard', sans-serif; font-weight: 700;
+      background: #FFFFFF; color: #37352f;
+      display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
+      transition: background 0.3s, color 0.3s;
+    }
     @media (prefers-color-scheme: dark) { body { background: #191919; color: #fff; } }
-    .widget { width: 90%; max-width: 300px; }
-    .date { font-size: 1.8rem; margin-bottom: 0.5rem; }
-    .days { font-size: 1.2rem; margin-bottom: 1rem; }
-    .number { color: #37352f; }
-    @media (prefers-color-scheme: dark) { .number { color: #fff; } }
-    .track { width: 100%; height: 10px; background: #e1e1e1; border-radius: 5px; overflow: hidden; }
-    .fill { height: 100%; background: #37352f; border-radius: 5px; width: 0%; transition: 1s; }
-    @media (prefers-color-scheme: dark) { .track { background: #333; } .fill { background: #fff; } }
+
+    .widget { width: 90%; max-width: 300px; text-align: center; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .title { font-size: 1rem; }
+    .score { font-size: 0.9rem; color: #2eaadc; }
+
+    .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+    .dot {
+      width: 1.2rem; height: 1.2rem; border-radius: 50%;
+      background: #e1e1e1; cursor: pointer; transition: 0.2s;
+    }
+    .dot.active { background: #37352f; }
+    @media (prefers-color-scheme: dark) { 
+      .dot { background: #333; } 
+      .dot.active { background: #fff; }
+    }
   </style>
 </head>
 <body>
-  <div class="widget">
-    <div class="date" id="date">Loading...</div>
-    <div class="days">▸ <span class="number" id="days">0</span>일 째 살아가는 중</div>
-    <div class="track"><div class="fill" id="fill"></div></div>
+
+<div class="widget">
+  <div class="header">
+    <div class="title">무지출 챌린지</div>
+    <div class="score" id="score">0일 달성</div>
   </div>
-  <script>
-    const d = new Date();
-    document.getElementById('date').innerText = d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
-    const birth = new Date('1990-01-01');
-    document.getElementById('days').innerText = Math.floor((d - birth) / 86400000).toLocaleString();
-    const start = new Date(d.getFullYear(), 0, 1);
-    const progress = ((d - start) / 31536000000 * 100).toFixed(1);
-    document.getElementById('fill').style.width = progress + '%';
-  </script>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const score = document.getElementById('score');
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const daysInMonth = new Date(now.getFullYear(), currentMonth + 1, 0).getDate();
+  
+  // 💡 데이터 로드 및 초기화 체크
+  let data = JSON.parse(localStorage.getItem('zeroSpendingData') || '{"month": -1, "days": []}');
+  
+  // 만약 저장된 달과 현재 달이 다르면 초기화
+  if (data.month !== currentMonth) {
+    data = { month: currentMonth, days: [] };
+    localStorage.setItem('zeroSpendingData', JSON.stringify(data));
+  }
+
+  function render() {
+    grid.innerHTML = '';
+    let count = 0;
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (data.days.includes(i) ? ' active' : '');
+      dot.onclick = () => {
+        if (data.days.includes(i)) data.days = data.days.filter(d => d !== i);
+        else data.days.push(i);
+        localStorage.setItem('zeroSpendingData', JSON.stringify(data));
+        render();
+      };
+      grid.appendChild(dot);
+      if (data.days.includes(i)) count++;
+    }
+    score.innerText = `${count}일 달성`;
+  }
+  render();
+</script>
 </body>
 </html>
