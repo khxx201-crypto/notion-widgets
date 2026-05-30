@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Days on Earth Widget</title>
+  <style>
+   
+    body {
+      font-family: "Segoe UI", "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      background-color: #FFFFFF; 
+      color: #37352f;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow: hidden; 
+    }
+    
+    
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #191919; 
+        color: rgba(255, 255, 255, 0.81); 
+      }
+    }
+
+    .widget-container {
+      text-align: center;
+     
+    }
+
+    .label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.5; 
+      margin-bottom: 8px;
+    }
+
+    .number {
+      font-size: 4.5rem; 
+      font-weight: 700;
+      line-height: 1;
+      color: #0B6E99; 
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .number {
+        color: #5E87C9; 
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget-container">
+    <div class="label">Days on Earth</div>
+    <div class="number" id="daysLived">0</div>
+  </div>
+
+  <script>
+    // 본인의 생년월일 (YYYY-MM-DD)을 입력하세요
+    const birthDateStr = '1996-01-03'; 
+    
+    function calculateDaysLived() {
+      const birthDate = new Date(birthDateStr);
+      const today = new Date();
+      
+      const diffTime = today - birthDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      document.getElementById('daysLived').innerText = diffDays.toLocaleString();
+    }
+
+    calculateDaysLived();
+  </script>
+
+</body>
+</html>
