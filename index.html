@@ -6,16 +6,23 @@
   <title>Life & Year Progress Widget</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css" />
   <style>
-    /* 1. 기본 노션 UI 설정 (라이트/다크 대응 및 프리텐다드 Bold 적용) */
+    /* 1. 반응형 폰트의 핵심 기준점 (루트 사이즈 설정) */
+    :root {
+      /* 가로(vw)와 세로(vh) 중 더 작은 값을 기준으로 폰트 크기를 유연하게 결정 */
+      font-size: min(4.5vw, 7vh); 
+    }
+
+    /* 2. 기본 노션 UI 설정 (라이트/다크 대응 및 프리텐다드 Bold) */
     body {
       font-family: 'Pretendard', sans-serif;
-      font-weight: 700; /* Bold 강제 적용 */
+      font-weight: 700;
       display: flex;
-      justify-content: flex-start; /* 왼쪽 정렬 */
+      justify-content: flex-start;
       align-items: center;
       height: 100vh;
       margin: 0;
-      padding: 20px 30px; /* 좌우 여백 확보 */
+      /* 화면 크기에 비례하여 여백도 자동으로 줄어들고 늘어남 */
+      padding: 0 6%; 
       background-color: #FFFFFF;
       color: #37352f;
       transition: background-color 0.3s ease, color 0.3s ease;
@@ -31,14 +38,14 @@
       }
     }
 
-    /* 2. 톱니바퀴 설정 아이콘 */
+    /* 3. 톱니바퀴 설정 아이콘 (UI 컨트롤은 고정 크기 유지) */
     .settings-btn {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: 15px;
+      right: 15px;
       cursor: pointer;
       opacity: 0;
-      font-size: 1.2rem;
+      font-size: 20px;
       transition: opacity 0.2s ease;
       filter: grayscale(100%);
     }
@@ -46,19 +53,17 @@
     body:hover .settings-btn { opacity: 0.3; }
     .settings-btn:hover { opacity: 0.8 !important; }
 
-    /* 3. 메인 위젯 레이아웃 */
+    /* 4. 메인 위젯 레이아웃 (rem 단위 적용으로 전체 자동 스케일링) */
     .widget-container {
       width: 100%;
-      max-width: 400px; /* 위젯 최대 너비 */
       display: flex;
       flex-direction: column;
-      gap: 12px; /* 각 요소 간격 */
+      gap: 0.8rem; /* 요소 간격도 화면에 비례하여 늘어남 */
     }
 
-    /* 상단 날짜 (May 12 2026 스타일) */
     .date-header {
       font-size: 2.2rem;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.05rem;
       color: #37352f;
     }
     
@@ -66,12 +71,11 @@
       .date-header { color: rgba(255, 255, 255, 0.9); }
     }
 
-    /* 생존 일수 텍스트 */
     .days-text {
       font-size: 1.4rem;
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 0.3rem;
       color: #37352f;
     }
 
@@ -81,27 +85,24 @@
 
     .triangle {
       font-size: 1.2rem;
-      margin-right: 2px;
       color: inherit;
     }
 
-    /* 요청하신 Number 컬러 (#37352f) 적용 */
     .number {
       color: #37352f; 
       font-size: 1.6rem;
     }
 
-    /* 다크모드에서는 배경이 어두워 글씨가 안 보일 수 있으므로 밝게 예외 처리 */
     @media (prefers-color-scheme: dark) {
       .number { color: rgba(255, 255, 255, 0.9); }
     }
 
-    /* 4. 진행률 바 (Progress Bar - Image 3 래퍼런스) */
+  
     .progress-wrapper {
-      margin-top: 10px;
+      margin-top: 0.5rem;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 0.3rem;
     }
 
     .progress-header {
@@ -111,184 +112,4 @@
     }
 
     .progress-track {
-      width: 100%;
-      height: 14px;
-      background-color: #e1e1e1;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .progress-track { background-color: #333333; }
-    }
-
-    .progress-fill {
-      height: 100%;
-      background-color: #37352f; /* 바 색상도 노션 기본 텍스트색으로 통일 */
-      border-radius: 10px;
-      transition: width 0.8s ease-out;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .progress-fill { background-color: rgba(255, 255, 255, 0.9); }
-    }
-
-    .progress-footer {
-      text-align: right;
-      font-size: 0.75rem;
-      color: #787774; /* 노션 기본 회색 */
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .progress-footer { color: rgba(255, 255, 255, 0.5); }
-    }
-
-    /* 5. 설정 모달창 (노션 순정 스타일) */
-    .modal {
-      display: none;
-      flex-direction: column;
-      background-color: #FFFFFF;
-      border: 1px solid rgba(15, 15, 15, 0.1);
-      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
-      border-radius: 6px;
-      padding: 20px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      width: 260px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .modal {
-        background-color: #252525;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-    }
-
-    .modal label { font-size: 0.85rem; margin-bottom: 10px; }
-    .modal input[type="date"] {
-      font-family: inherit; font-weight: 700; padding: 6px 10px; border-radius: 4px;
-      border: 1px solid rgba(15, 15, 15, 0.2); background: transparent; color: inherit;
-      margin-bottom: 15px; outline: none;
-    }
-    @media (prefers-color-scheme: dark) {
-      .modal input[type="date"] { border: 1px solid rgba(255, 255, 255, 0.2); color-scheme: dark; }
-    }
-
-    .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; }
-    .btn { padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: none; font-weight: 700; font-family: inherit; }
-    .btn-save { background-color: #2eaadc; color: white; }
-    .btn-save:hover { background-color: #069cda; }
-    .btn-cancel { background-color: transparent; color: inherit; opacity: 0.7; }
-    .btn-cancel:hover { opacity: 1; background-color: rgba(15, 15, 15, 0.05); }
-    @media (prefers-color-scheme: dark) { .btn-cancel:hover { background-color: rgba(255, 255, 255, 0.05); } }
-  </style>
-</head>
-<body>
-
-  <div class="settings-btn" id="settingsBtn" title="생년월일 설정">⚙️</div>
-
-  <div class="widget-container" id="widgetContent">
-    <div class="date-header" id="currentDate">May 12 2026</div>
-    
-    <div class="days-text">
-      <span class="triangle">▸</span>
-      <span class="number" id="daysLived">0</span>일 째 열심히 살아가는 중
-    </div>
-
-    <div class="progress-wrapper">
-      <div class="progress-header">
-        <span id="currentYear">2026</span>
-        <span id="progressPercent">0.0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-      </div>
-      <div class="progress-footer" id="progressDays">0/365 days</div>
-    </div>
-  </div>
-
-  <div class="modal" id="settingsModal">
-    <label>생년월일을 입력해주세요</label>
-    <input type="date" id="birthDateInput">
-    <div class="modal-buttons">
-      <button class="btn btn-cancel" id="cancelBtn">취소</button>
-      <button class="btn btn-save" id="saveBtn">저장</button>
-    </div>
-  </div>
-
-  <script>
-    const daysLivedEl = document.getElementById('daysLived');
-    const currentDateEl = document.getElementById('currentDate');
-    const currentYearEl = document.getElementById('currentYear');
-    const progressPercentEl = document.getElementById('progressPercent');
-    const progressFillEl = document.getElementById('progressFill');
-    const progressDaysEl = document.getElementById('progressDays');
-    
-    const settingsBtn = document.getElementById('settingsBtn');
-    const settingsModal = document.getElementById('settingsModal');
-    const widgetContent = document.getElementById('widgetContent');
-    const birthDateInput = document.getElementById('birthDateInput');
-    const saveBtn = document.getElementById('saveBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-
-    // 영어 월 이름 배열
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    function updateDisplay() {
-      const today = new Date();
-      
-      // 1. 날짜 헤더 업데이트 (예: May 30 2026)
-      const monthStr = monthNames[today.getMonth()];
-      currentDateEl.innerText = `${monthStr} ${today.getDate()} ${today.getFullYear()}`;
-
-      // 2. 생존 일수 계산
-      const savedDate = localStorage.getItem('userBirthDate') || '1990-01-01';
-      const birthDate = new Date(savedDate);
-      const diffTime = today.getTime() - birthDate.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      daysLivedEl.innerText = diffDays.toLocaleString();
-
-      // 3. 올해 진행률(Year Progress) 계산
-      const year = today.getFullYear();
-      const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-      const daysInYear = isLeapYear ? 366 : 365;
-      const startOfYear = new Date(year, 0, 1);
-      const dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-      const percent = ((dayOfYear / daysInYear) * 100).toFixed(1);
-
-      // 프로그레스 바 UI 업데이트
-      currentYearEl.innerText = year;
-      progressPercentEl.innerText = `${percent}%`;
-      // 애니메이션 효과를 위해 약간의 딜레이 후 넓이 적용
-      setTimeout(() => { progressFillEl.style.width = `${percent}%`; }, 100);
-      progressDaysEl.innerText = `${dayOfYear}/${daysInYear} days`;
-    }
-
-    settingsBtn.addEventListener('click', () => {
-      birthDateInput.value = localStorage.getItem('userBirthDate') || '1990-01-01';
-      widgetContent.style.opacity = '0.1'; // 뒤 배경 흐리게
-      settingsModal.style.display = 'flex';
-    });
-
-    saveBtn.addEventListener('click', () => {
-      if(birthDateInput.value) {
-        localStorage.setItem('userBirthDate', birthDateInput.value);
-      }
-      settingsModal.style.display = 'none';
-      widgetContent.style.opacity = '1';
-      updateDisplay();
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      settingsModal.style.display = 'none';
-      widgetContent.style.opacity = '1';
-    });
-
-    updateDisplay();
-  </script>
-
-</body>
-</html>
+      width
