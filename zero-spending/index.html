@@ -15,10 +15,9 @@
     .widget { width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     
-    /* 타이틀 영역 수정: 월 표기를 위해 flex 사용 */
-    .title-group { display: flex; align-items: baseline; gap: 8px; }
-    .month-label { font-size: 0.8rem; color: #787774; text-transform: uppercase; }
-    .title { font-size: 1rem; }
+    /* 텍스트 삭제 및 월 표기 강조 */
+    .month-label { font-size: 1.1rem; color: #37352f; text-transform: uppercase; }
+    @media (prefers-color-scheme: dark) { .month-label { color: #fff; } }
     
     .score { font-size: 0.9rem; color: #2eaadc; }
 
@@ -36,10 +35,7 @@
 
 <div class="widget">
   <div class="header">
-    <div class="title-group">
-      <div class="month-label" id="monthLabel">Month</div>
-      <div class="title">무지출 챌린지</div>
-    </div>
+    <div class="month-label" id="monthLabel">Month</div>
     <div class="score" id="score">0일 달성</div>
   </div>
   <div class="grid" id="grid"></div>
@@ -51,7 +47,6 @@
   const monthLabel = document.getElementById('monthLabel');
   const now = new Date();
   
-  // 💡 월 표기 업데이트
   monthLabel.innerText = now.toLocaleDateString('en-US', { month: 'short' });
   
   const currentMonth = now.getMonth();
